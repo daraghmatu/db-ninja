@@ -1,13 +1,14 @@
 import mysql.connector
 from mysql.connector import pooling, Error
 from config import Config
+from werkzeug.security import generate_password_hash
 
 # Initialize Connection Pool
 # Allows multiple users to query the DB simultaneously more efficiently
 try:
     db_pool = mysql.connector.pooling.MySQLConnectionPool(
         pool_name="game_pool",
-        pool_size=5, # Start with 5 connections
+        pool_size=5, # 5 connections
         host=Config.DB_HOST,
         user=Config.DB_USER,
         password=Config.DB_PASSWORD,
@@ -40,6 +41,53 @@ def db_health_check():
             cursor.close()
             conn.close()
     return False
+
+def verify_enrollment_pin(pin):
+    """Checks PIN is correct"""
+    conn = get_connection()
+    if not conn: return False
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT is_active FROM enrollment_pin WHERE pin_code = %s"
+        cursor.execute(query, (pin,))
+        result = cursor.fetchone()
+        return result and result['is_active']
+    finally:
+        cursor.close()
+        conn.close()
+
+def create_user(username, password):
+    """Hash password and insert new usr"""
+    conn = get_connection()
+    if not conn: return False
+    try:
+        cursor = conn.cursor()
+        # Hash password
+        hashed_pw = generate_password_hash(password)
+        
+        query = "INSERT INTO users (username, password_hash) VALUES (%s, %s)"
+        cursor.execute(query, (username, hashed_pw))
+        conn.commit()
+        return True
+    except Error as e:
+        print(f"Error creating user: {e}")
+        return False
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_user_by_username(username):
+    """Fetch user record for authentication."""
+    conn = get_connection()
+    if not conn: return None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT user_id, username, password_hash, current_level FROM users WHERE username = %s"
+        cursor.execute(query, (username,))
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == "__main__":
     # Test the connection when running this file directly

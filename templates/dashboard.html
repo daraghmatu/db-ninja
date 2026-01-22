@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mt-5 text-center">
+    <h1>Welcome back, {{ username }}!</h1>
+    <p class="lead">Select your current challenge below.</p>
+    <div class="row mt-4">
+        {% for i in range(1, 11) %}
+        <div class="col-md-2 mb-3">
+            <div class="card {{ 'bg-success text-white' if i < level else 'bg-light' }} {{ 'border-primary shadow' if i == level }}">
+                <div class="card-body">
+                    <h5>Level {{ i }}</h5>
+                    {% if i <= level %}
+                        <a href="/game/{{ i }}" class="btn btn-sm btn-dark">Play</a>
+                    {% else %}
+                        <span class="badge bg-secondary">Locked</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

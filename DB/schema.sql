@@ -8,6 +8,7 @@ create database db_ninja_prd character set utf8mb4 collate utf8mb4_unicode_ci;  
                                                                                         
 use db_ninja_prd;
 
+-- Table Definitions
 
 create table enrollment_pin (
     pin_code varchar(50) primary key,
@@ -77,8 +78,9 @@ create table game_attempt (
     foreign key (user_id) references users(user_id)
 );
 
+-- Triggers
 
--- trigger: automatically clear progress records if an admin resets a user to level 1
+-- automatically clear progress records if an admin resets a user to level 1
 delimiter //
 
 create trigger reset_progress_on_level_one_update
@@ -96,6 +98,8 @@ begin
 end //
 
 delimiter ;
+
+-- Stored Procedures
 
 delimiter //
 
@@ -176,3 +180,8 @@ begin
 end //
 
 delimiter ;
+
+-- Insert Data
+
+insert into enrollment_pin (pin_code, is_active, description)
+values (754691, true, 'initial test enrollment key');
