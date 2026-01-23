@@ -19,7 +19,7 @@ create table enrollment_pin (
 create table users (
     user_id int primary key auto_increment,
     username varchar(50) unique not null,
-    password_hash varchar(128) not null,
+    password_hash varchar(255) not null,
     current_level int not null default 1,
     current_lives int not null default 3,
     total_score int not null default 0,
@@ -38,8 +38,12 @@ create table question (
     question_id int primary key auto_increment,
     level_id int not null,
     question_text text not null,
-    correct_answer char(1) not null, -- 'a', 'b', 'c', 'd'
-    points_value int not null,
+    option_a text not null, 
+    option_b text not null, 
+    option_c text not null, 
+    option_d text not null,
+    correct_option char(1) not null, -- 'a', 'b', 'c', 'd'
+    points int not null,
     foreign key (level_id) references level(level_id)
 );
 
@@ -185,3 +189,18 @@ delimiter ;
 
 insert into enrollment_pin (pin_code, is_active, description)
 values (754691, true, 'initial test enrollment key');
+
+insert into level (level_id, name, unique_key_length, topic, is_available)
+values
+(1, 'Level 1', 6, 'Normalisation', 1);
+
+insert into question (level_id, question_text, option_a, option_b, option_c, option_d, correct_option, points) 
+values 
+(1, 'Which SQL keyword is used to retrieve data from a database?', 'GET', 'EXTRACT', 'SELECT', 'OPEN', 'C', 10),
+(1, 'What does the "*" mean in "SELECT * FROM users"?', 'All columns', 'All rows', 'Delete all', 'Filter data', 'A', 10),
+(1, 'Which clause is used to filter records?', 'ORDER BY', 'WHERE', 'GROUP BY', 'LIMIT', 'B', 10),
+(1, 'Which command is used to remove all data from a table without deleting the table structure?', 'REMOVE', 'DELETE', 'DROP', 'TRUNCATE', 'D', 10),
+(1, 'How do you select all columns from a table named "Students"?', 'SELECT Students', 'SELECT * FROM Students', 'EXTRACT Students', 'SHOW Students', 'B', 10),
+(1, 'Which SQL statement is used to update data in a database?', 'MODIFY', 'SAVE', 'UPDATE', 'CHANGE', 'C', 10),
+(1, 'In SQL, what is the default sort order of ORDER BY?', 'Descending', 'Random', 'Ascending', 'Alphabetic only', 'C', 10),
+(1, 'How do you return the number of records in the "Orders" table?', 'COUNT(*)', 'SUM(*)', 'TOTAL(*)', 'NUMBER(*)', 'A', 10);

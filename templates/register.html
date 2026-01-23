@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 game-card bg-white p-5 mt-5">
+        <h2 class="text-center mb-4">Player Registration</h2>
+        
+        <form method="POST">
+            <div class="mb-3">
+                <input type="text" name="pin" class="form-control" placeholder="Enrollment PIN" required>
+            </div>
+            <div class="mb-3">
+                <input type="text" name="username" class="form-control" placeholder="Choose Username" required>
+            </div>
+            <div class="mb-3">
+                <input type="password" name="password" class="form-control" placeholder="Create Password" required>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Create Account</button>
+        </form>
+        <div class="mt-3 text-center">
+            <a href="{{ url_for('login') }}">Already have an account? Login</a>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <img src="{{ url_for('static', filename='images/ninja_karate.gif') }}" style="width: 80px; opacity: 0.6;">
+</div>
+{% endblock %}

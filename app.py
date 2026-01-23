@@ -39,7 +39,7 @@ def register():
             flash("Account created successfully! Please log in.")
             return redirect(url_for('login'))
         else:
-            flash("Username already exists or a database error occurred.")
+            flash("Username already exists")
     
     return render_template('register.html')
 

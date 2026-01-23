@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-4 game-card bg-white p-5 mt-5">
+        <h2 class="text-center mb-4">Login to Play</h2>
+        
+        <form action="{{ url_for('login') }}" method="post">
+            <div class="mb-3">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" placeholder="Enter username" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" class="form-control" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Enter Game</button>
+        </form>
+        
+        <div class="mt-4 text-center">
+            <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <img src="{{ url_for('static', filename='images/ninja_karate.gif') }}" style="width: 80px; opacity: 0.6;">
+</div>
+{% endblock %}
