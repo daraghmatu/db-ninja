@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card game-card p-4">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>Level {{ level_id }}: Question {{ question_num }}/6</h3>
+                <div id="lives">
+                    {% for i in range(lives) %} ❤️ {% endfor %}
+                </div>
+            </div>
+
+            <div class="progress mt-3" style="height: 25px;">
+                <div class="progress-bar bg-success" style="width: {{ (question_num / 6) * 100 }}%"></div>
+            </div>
+
+            <div class="mt-5 mb-5 text-center">
+                <p class="lead" style="font-size: 1.5rem;">{{ question.question_text }}</p>
+                
+                {% if last_correct %}
+                    <img src="{{ url_for('static', filename='images/ninja_karate.gif') }}" id="ninja-anim">
+                {% endif %}
+            </div>
+
+            <form action="/submit_answer" method="POST">
+                <input type="hidden" name="session_id" value="{{ session_id }}">
+                <div class="d-grid gap-2">
+                    <button name="answer" value="A" class="btn btn-outline-dark text-start p-3">A) {{ question.option_a }}</button>
+                    <button name="answer" value="B" class="btn btn-outline-dark text-start p-3">B) {{ question.option_b }}</button>
+                    <button name="answer" value="C" class="btn btn-outline-dark text-start p-3">C) {{ question.option_c }}</button>
+                    <button name="answer" value="D" class="btn btn-outline-dark text-start p-3">D) {{ question.option_d }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3">
+            <h4>🏆 Top Masters</h4>
+            <table class="table table-sm">
+                <thead><tr><th>User</th><th>Points</th></tr></thead>
+                <tbody>
+                    {% for entry in leaderboard %}
+                    <tr class="{{ 'table-primary' if entry.username == session['username'] }}">
+                        <td>{{ entry.username }}</td>
+                        <td>{{ entry.total_score }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

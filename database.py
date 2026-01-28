@@ -89,6 +89,18 @@ def get_user_by_username(username):
         cursor.close()
         conn.close()
 
+def get_all_levels():
+    """Fetches the release status for all 10 levels."""
+    conn = get_connection()
+    if not conn: return []
+    try:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT level_id, name, is_available FROM level ORDER BY level_id")
+        return cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
 if __name__ == "__main__":
     # Test the connection when running this file directly
     db_health_check()

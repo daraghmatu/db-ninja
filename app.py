@@ -65,7 +65,48 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    return render_template('dashboard.html', username=session['username'], level=session['current_level'])
+    
+    levels = db.get_all_levels() 
+    
+    progress = session.get('current_level', 1)
+
+    return render_template('dashboard.html', 
+                           username=session['username'], 
+                           user_level=progress, 
+                           levels=levels)
+
+
+@app.route('/game/<int:level_id>')
+def game(level_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    
+    # 1. Security Check: Is the level released? Is the user high enough level?
+    level_info = db.get_level_info(level_id)
+    if not level_info or not level_info['is_open'] or level_id > session['current_level']:
+        flash("That level is currently locked!")
+        return redirect(url_for('dashboard'))
+
+    # 2. Get or Create Session
+    # We'll write get_or_create_session in database.py next
+    game_session = db.get_or_create_session(user_id, level_id)
+    
+    # 3. Get the current question data
+    # Based on the session['current_question_index']
+    question_data = db.get_current_question(game_session['session_id'])
+    
+    # 4. Fetch the leaderboard for the sidebar
+    leaderboard = db.get_leaderboard()
+
+    return render_template('game.html', 
+                           question=question_data,
+                           question_num=game_session['current_question_index'] + 1,
+                           lives=game_session['lives_remaining'],
+                           level_id=level_id,
+                           session_id=game_session['session_id'],
+                           leaderboard=leaderboard)
 
 @app.route('/logout')
 def logout():
