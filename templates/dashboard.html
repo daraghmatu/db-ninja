@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container mt-5 text-center">
     <h2>Konnichiwa {{ username }}</h2>
-    <p>Current Rank: Level {{ user_level }}</p>
+    <p>Current Rank: <strong>{{ session['level_name'] }}</strong></p>
     <hr>
     
     <div class="row">
@@ -12,15 +12,16 @@
                 <div class="card-body text-center">
                     <h5 class="card-title">{{ l.name }}</h5>
                     
-                    {% if l.is_available %}
-                        {% if l.level_id <= user_level %}
-                            <a href="{{ url_for('game', level_id=l.level_id) }}" class="btn btn-primary w-100">Play Level</a>
-                        {% else %}
-                            <button class="btn btn-outline-secondary w-100" disabled>Complete Level {{ l.level_id - 1 }} First</button>
-                        {% endif %}
+                    {% if l.is_available and l.level_id == (user_level + 1) %}
+                        <a href="{{ url_for('game', level_id=l.level_id) }}" class="btn btn-primary w-100">Play</a>
+                        
+                    {% elif l.is_available and l.level_id <= user_level %}
+                        <a href="{{ url_for('game', level_id=l.level_id) }}" class="btn btn-outline-success w-100">Practice (Completed ✅)</a>
+ 
                     {% else %}
-                        <button class="btn btn-dark w-100" disabled>Locked 🔒</button>
+                        <button class="btn btn-secondary w-100" disabled>🔒</button>
                     {% endif %}
+
                 </div>
             </div>
         </div>
