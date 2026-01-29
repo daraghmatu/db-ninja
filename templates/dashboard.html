@@ -3,19 +3,23 @@
 <style>
     body { background-color: #0d1117; color: #c9d1d9; font-family: 'Courier New', Courier, monospace; }
     .arcade-card { background: #161b22; border: 2px solid #30363d; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    .arcade-card h6 { color: #8b949e !important; font-weight: bold; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
     .progress-segment { height: 20px; border: 1px solid #30363d; background: #0d1117; }
     .progress-segment.complete { background: #238636; box-shadow: 0 0 10px #238636; }
-    .progress-segment.current { background: #f1e05a; animation: blink 1s infinite; }
+    .progress-segment.current { background: #f1e05a; box-shadow: 0 0 10px #f1e05a; } 
     .ninja-terminal { border-left: 4px solid #f1e05a; padding-left: 15px; }
     .question-box { border-bottom: 1px solid #30363d; padding: 15px 0; }
     .key-input { background: #0d1117; border: 2px solid #f1e05a; color: #f1e05a; font-size: 2rem; text-align: center; letter-spacing: 10px; text-transform: uppercase; }
+    .key-input::placeholder { color: rgba(241, 224, 90, 0.3); }
+    .leaderboard-scroll { max-height: 300px; overflow-y: auto; scrollbar-width: thin; }
+    .heart-icon { color: #ff3e3e; text-shadow: 0 0 5px #ff3e3e; }
     @keyframes blink { 50% { opacity: 0.5; } }
 </style>
 
 <div class="container-fluid mt-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h5 class="text-center mb-3">NINJA JOURNEY: {{ session['rank_name'] }}</h5>
+            <h5 class="text-center mb-3">NINJA JOURNEY: {{ session['level_name'] }}</h5>
             <div class="d-flex w-100">
                 {% for l in levels %}
                 <div class="flex-fill progress-segment 
@@ -30,22 +34,29 @@
     <div class="row">
         <div class="col-md-3">
             <div class="arcade-card text-center">
-                <img src="/static/images/ninja_{{ user_level }}.gif" alt="Ninja Status" class="img-fluid mb-3" style="max-height: 150px;">
+                <img src="/static/images/ninja_karate.gif" alt="Ninja Status" class="img-fluid mb-3" style="max-height: 150px;">
                 <h4 class="text-warning">{{ username }}</h4>
-                <p>Score: {{ session.get('total_score', 0) }}</p>
+                <div class="mb-2">
+                    {% for i in range(lives) %}
+                        <span class="heart-icon">❤️</span>
+                    {% endfor %}
+                </div>
+                <p class="small">Rank: {{ session['level_name'] }}</p>
             </div>
 
             <div class="arcade-card">
                 <h6 class="text-muted text-uppercase">Top Ninjas</h6>
-                <table class="table table-dark table-sm table-borderless">
-                    {% for leader in leaderboard %}
-                    <tr>
-                        <td>{{ loop.index }}.</td>
-                        <td>{{ leader.username }}</td>
-                        <td class="text-end text-success">{{ leader.total_score }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
+                <div class="leaderboard-scroll">
+                    <table class="table table-dark table-sm table-borderless">
+                        {% for leader in leaderboard %}
+                        <tr>
+                            <td>{{ loop.index }}.</td>
+                            <td>{{ leader.username }}</td>
+                            <td class="text-end text-success">{{ leader.total_score }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
             </div>
         </div>
 

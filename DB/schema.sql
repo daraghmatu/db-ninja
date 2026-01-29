@@ -16,9 +16,9 @@ create table enrollment_pin (
     description varchar(255)
 );
 
-create table level (
+create table levels (
     level_id int primary key,
-    name varchar(100) not null,
+    level_name varchar(100) not null,
     unique_key_length int not null default 6, -- number of questions
     topic varchar(100) not null,
     is_available boolean not null default false -- controlled by admin page
@@ -29,10 +29,9 @@ create table users (
     username varchar(50) unique not null,
     password_hash varchar(255) not null,
     current_level int not null default 0,
-    current_lives int not null default 3,
     total_score int not null default 0,
     registration_date timestamp default current_timestamp,
-    foreign key (current_level) references level(level_id)
+    foreign key (current_level) references levels(level_id)
 );
 
 create table question (
@@ -45,9 +44,9 @@ create table question (
     option_d text not null,
     correct_option char(1) not null, -- 'a', 'b', 'c', 'd'
     points int not null,
-    foreign key (level_id) references level(level_id)
+    foreign key (level_id) references levels(level_id)
 );
-
+/*
 -- long-term record of best performance on each level
 create table user_progress (
     user_id int,
@@ -57,22 +56,7 @@ create table user_progress (
     completion_date timestamp default current_timestamp on update current_timestamp,
     primary key (user_id, level_id),
     foreign key (user_id) references users(user_id),
-    foreign key (level_id) references level(level_id)
-);
-
--- temporary, for randomised answers
-create table user_session (
-    session_id int primary key auto_increment,
-    user_id int not null,
-    level_id int not null,
-    final_submission_key varchar(100), -- the unique combined answer string
-    questions_data json not null, -- stores the randomized qs/options for integrity
-    current_question_index int default 0,
-    lives_remaining int default 3,
-    session_score int not null default 0,
-    is_active boolean default true,
-    foreign key (user_id) references users(user_id),
-    foreign key (level_id) references level(level_id)
+    foreign key (level_id) references levels(level_id)
 );
 
 -- for analytics and the 'total lives lost' metric
@@ -84,6 +68,21 @@ create table game_attempt (
     successful boolean not null,
     lives_lost int not null default 0, -- 1 if failed, 0 if successful
     foreign key (user_id) references users(user_id)
+);
+*/
+-- temporary, for randomised answers
+create table user_session (
+    session_id int primary key auto_increment,
+    user_id int not null,
+    level_id int not null,
+    questions_data json not null, -- stores the randomized qs/options for integrity
+    final_submission_key varchar(6), -- the unique combined answer string
+    lives_remaining int default 3,
+    session_score int not null default 0,
+    is_active boolean default true,
+    started_at timestamp default current_timestamp,
+    foreign key (user_id) references users(user_id),
+    foreign key (level_id) references levels(level_id)
 );
 
 -- Triggers
@@ -194,7 +193,7 @@ delimiter ;
 insert into enrollment_pin (pin_code, is_active, description)
 values (754691, true, 'initial test enrollment key');
 
-insert into level (level_id, name, unique_key_length, topic, is_available)
+insert into levels (level_id, level_name, unique_key_length, topic, is_available)
 values
 (0, 'Newb', 0, 'Starting state', 1),
 (1, 'White Belt', 6, 'DB Design', 1),

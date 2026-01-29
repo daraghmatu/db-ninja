@@ -80,6 +80,7 @@ def dashboard():
                            levels=levels,
                            leaderboard=leaders,
                            questions=questions,
+                           lives=game_session['lives_remaining'],
                            session_id=game_session['session_id'])
 
 @app.route('/submit', methods=['POST'])

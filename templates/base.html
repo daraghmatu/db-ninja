@@ -2,34 +2,71 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>DB Ninja</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB NINJA ACADEMY</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f4f7f6; }
-        .game-card { margin-top: 50px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { 
+            background-color: #0d1117; 
+            color: #c9d1d9; 
+            font-family: 'Courier New', monospace; 
+            padding-top: 120px; /* This keeps content BELOW the navbar */
+        }
+        .navbar-arcade {
+            background-color: #161b22;
+            border-bottom: 2px solid #30363d;
+        }
+        .arcade-card { 
+            background: #161b22; 
+            border: 2px solid #30363d; 
+            border-radius: 10px; 
+            padding: 30px;
+        }
+        .text-warning { color: #f1e05a !important; }
+        .key-input { 
+            background-color: #0d1117 !important; 
+            color: #f1e05a !important; 
+            border: 1px solid #30363d !important; 
+        }
+        .key-input::placeholder { color: #484f58 !important; }
+        
+        /* Fixed Flash Messages */
+        .system-alerts {
+            position: fixed;
+            top: 80px; /* Just below the navbar */
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1050;
+            width: 90%;
+            max-width: 500px;
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark">
+
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-arcade fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="/">DB Ninja 🥷</a>
-            {% if session['username'] %}
-                <span class="navbar-text text-white">
-                    
-                    <a href="/logout" class="btn btn-outline-danger btn-sm">Logout</a>
-                </span>
-            {% endif %}
+            <a class="navbar-brand text-warning" href="/">DB_NINJA</a>
         </div>
     </nav>
-    <div class="container">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert alert-info mt-3">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+
+    <div class="system-alerts">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-dark border-warning text-warning alert-dismissible fade show" role="alert">
+                <strong>> SYSTEM:</strong> {{ message }}
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
         {% endwith %}
+    </div>
+
+    <div class="container">
         {% block content %}{% endblock %}
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

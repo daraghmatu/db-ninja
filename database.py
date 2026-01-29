@@ -85,9 +85,9 @@ def get_user_by_username(username):
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
-                select  u.user_id, u.username, u.password_hash, u.current_level, l.name as level_name 
+                select  u.user_id, u.username, u.password_hash, u.current_level, l.level_name 
                 from    users u 
-                inner join level l 
+                inner join levels l 
                 where   current_level = l.level_id 
                 and     username = %s
                 """
@@ -170,8 +170,8 @@ def get_or_create_session(user_id, level_id):
 
         insert_sql = """
             insert into user_session 
-            (user_id, level_id, questions_data, current_question_index, lives_remaining, is_active)
-            VALUES (%s, %s, %s, 0, 3, 1)
+            (user_id, level_id, questions_data)
+            VALUES (%s, %s, %s)
         """
         cursor.execute(insert_sql, (user_id, level_id, questions_json))
         conn.commit()
@@ -184,8 +184,7 @@ def get_or_create_session(user_id, level_id):
         cursor.close()
         conn.close()
 
-def get_leaderboard(limit=10):
-    """Calculates total scores for the top players"""
+def get_leaderboard(limit=100):
     conn = get_connection()
     if not conn: return []
     try:
