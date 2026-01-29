@@ -168,13 +168,11 @@ def get_or_create_session(user_id, level_id):
         # Serialize the full objects into JSON
         questions_json = json.dumps(questions)
 
-        # 3. Insert into user_session
         insert_sql = """
             insert into user_session 
             (user_id, level_id, questions_data, current_question_index, lives_remaining, is_active)
             VALUES (%s, %s, %s, 0, 3, 1)
         """
-        print(f'user id: {user_id}, level id: {level_id}, questions: {questions_json}')
         cursor.execute(insert_sql, (user_id, level_id, questions_json))
         conn.commit()
 
@@ -197,27 +195,6 @@ def get_leaderboard(limit=10):
         """
         cursor.execute(query, (limit,))
         return cursor.fetchall()
-    finally:
-        cursor.close()
-        conn.close()
-
-def get_current_question(session_id):
-    conn = get_connection()
-    try:
-        cursor = conn.cursor(dictionary=True)
-        query = """
-            select  questions_data, current_question_index 
-            from    user_session 
-            where   session_id = %s
-            """
-        cursor.execute(query, (session_id,))
-        res = cursor.fetchone()
-        
-        # Decode the snapshot
-        all_questions = json.loads(res['questions_data'])
-        current_idx = res['current_question_index']
-        
-        return all_questions[current_idx]
     finally:
         cursor.close()
         conn.close()

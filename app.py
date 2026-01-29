@@ -2,16 +2,12 @@ from flask import Flask, render_template, request, redirect, url_for, session, f
 from config import Config
 import database as db
 from werkzeug.security import check_password_hash
+import json
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 # Ensure the DB is up before starting the server
-'''@app.before_first_request
-def check_db():
-    if not db.db_health_check():
-        print("Warning: Database health check failed at startup!")
-'''
 with app.app_context():
     if not db.db_health_check():
         print("Warning: Database health check failed at startup!")
@@ -66,44 +62,47 @@ def login():
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
-    levels = db.get_all_levels() 
-    
-    progress = session.get('current_level', 1)
-
-    return render_template('dashboard.html', 
-                           username=session['username'], 
-                           user_level=progress, 
-                           levels=levels)
-
-@app.route('/game/<int:level_id>')
-def game(level_id):
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
 
     user_id = session['user_id']
+    current_level = session['current_level']
+    next_level = session['current_level'] + 1 
+
+    game_session = db.get_or_create_session(user_id, next_level)
+    questions = json.loads(game_session['questions_data'])
+
+    levels = db.get_all_levels()
+
+    leaders = db.get_leaderboard()
+
+    return render_template('dashboard.html', 
+                           username=session['username'],
+                           user_level=current_level,
+                           levels=levels,
+                           leaderboard=leaders,
+                           questions=questions,
+                           session_id=game_session['session_id'])
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    user_key = request.form.get('submission_key').upper()
+    user_id = session['user_id']
+    level_id = session['current_level']
+
+    # Get session answer in JSON
+    game_session = db.get_active_session(user_id, level_id)
+    questions = json.loads(game_session['questions_data'])
     
-    level_info = db.get_level_info(level_id)
-    if not level_info or not level_info['is_available'] or level_id > (session['current_level']+1):
-        flash("Level currently locked!")
-        return redirect(url_for('dashboard'))
+    # Build key from snapshot
+    correct_key = "".join([q['correct_option'] for q in questions])
 
-    game_session = db.get_or_create_session(user_id, level_id)
-    if not game_session:
-        flash("Could not start session. Is the level open?")
-        return redirect(url_for('dashboard'))
+    if user_key == correct_key:
+        # db.complete_level(game_session['session_id'], user_id, level_id)
+        flash("Level Cleared! Rank Up!")
+    else:
+        # db.handle_failed_attempt(game_session['session_id'])
+        flash("Incorrect Sequence! The Ninja has fallen.")
 
-    question_data = db.get_current_question(game_session['session_id'])
-
-    leaderboard = db.get_leaderboard()
-
-    return render_template('game.html', 
-                           question_num=game_session['current_question_index'] + 1,
-                           lives=game_session['lives_remaining'],
-                           level_id=level_id,
-                           session_id=game_session['session_id'],
-                           question=question_data,
-                           leaderboard=leaderboard)
+    return redirect(url_for('dashboard'))
 
 @app.route('/logout')
 def logout():
