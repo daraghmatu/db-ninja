@@ -1,28 +1,39 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-5 game-card bg-white p-5 mt-5">
-        <h2 class="text-center mb-4">Player Registration</h2>
+    <div class="col-md-5 col-lg-4 arcade-card p-5">
+        <h2 class="text-center mb-4 text-warning">Player Registration</h2>
         
         <form method="POST">
             <div class="mb-3">
-                <input type="text" name="pin" class="form-control" placeholder="Enrollment PIN" required>
+                <label class="form-label text-warning">ENROLLMENT PIN</label>
+                <input type="text" name="pin" class="form-control key-input" placeholder="Enter PIN" required>
             </div>
+
             <div class="mb-3">
-                <input type="text" name="username" class="form-control" placeholder="Choose Username" required>
+                <label class="form-label text-warning">CHOOSE USERNAME</label>
+                <input type="text" name="username" class="form-control key-input" placeholder="Ninja name" required>
             </div>
+
             <div class="mb-3">
-                <input type="password" name="password" class="form-control" placeholder="Create Password" required>
+                <label class="form-label text-warning">CREATE PASSWORD</label>
+                <input type="password" name="password" class="form-control key-input" placeholder="Secret code" required>
             </div>
-            <button type="submit" class="btn btn-success w-100">Create Account</button>
+
+            <button type="submit" class="btn btn-warning w-100 mt-3">
+                <strong>CREATE ACCOUNT</strong>
+            </button>
         </form>
-        <div class="mt-3 text-center">
-            <a href="{{ url_for('login') }}">Already have an account? Login</a>
+
+        <div class="mt-4 text-center">
+            <p>Already have an account? <br>
+                <a href="{{ url_for('login') }}" class="text-warning" style="text-decoration: underline;">Login here</a>
+            </p>
         </div>
     </div>
 </div>
 
-<div class="text-center mt-4">
+<div class="text-center mt-5">
     <img src="{{ url_for('static', filename='images/ninja_karate.gif') }}" style="width: 80px; opacity: 0.6;">
 </div>
 {% endblock %}

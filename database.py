@@ -103,8 +103,8 @@ def get_all_levels():
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
-                select  level_id, name, is_available 
-                from    level 
+                select  level_id, level_name, is_available 
+                from    levels
                 where   level_id > 0 
                 order by level_id
                 """
@@ -120,8 +120,8 @@ def get_level_info(level_id):
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
-            select  level_id, name, is_available 
-            from    level 
+            select  level_id, level_name, is_available 
+            from    levels 
             where   level_id = %s
         """
         cursor.execute(query, (level_id,))

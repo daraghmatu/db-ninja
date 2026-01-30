@@ -1,33 +1,39 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8 text-center bg-white p-5 game-card">
-        <h1 class="display-4">🥷 The Database Ninja Game </h1>
-        <p class="lead mt-3">Test your knowledge, climb the leaderboard, and become a Database Ninja!</p>
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8 arcade-card p-5">
         
-        <hr class="my-4">
-        
-        <div class="row text-start mt-4">
-            <div class="col-md-6">
-                <h4>📜 Game Rules</h4>
-                <ul>
+        <div class="text-center mb-5">
+            <h1 class="display-4 text-warning">THE DATABASE NINJA</h1>
+            <p class="lead text-muted mt-3">Master the ancient art of SQL. Strike fast, strike true.</p>
+        </div>
+
+        <div class="row align-items-center">
+            <div class="col-md-7 border-end border-secondary">
+                <h4 class="text-warning mb-4">> GAME RULES</h4>
+                <ul class="text-light" style="list-style-type: '⚡ '; line-height: 1.8;">
                     <li>There are <strong>10 Levels</strong> of increasing difficulty</li>
                     <li>Each level consists of <strong>6 random questions</strong></li>
-                    <li>You must answer correctly to progress to the next level</li>
-                    <li>The faster you answer, the higher your potential score!</li>
+                    <li>You must answer correctly to progress</li>
+                    <li>Speed is your greatest weapon for <strong>High Scores!</strong></li>
                 </ul>
             </div>
-            <div class="col-md-6 text-center">
-                <h4>Ready to Start?</h4>
-                <div class="d-grid gap-3 mt-4">
-                    <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">Login</a>
-                    <a href="{{ url_for('register') }}" class="btn btn-success btn-lg">Register</a>
+
+            <div class="col-md-5 text-center">
+                <div class="mb-4">
+                    <img src="{{ url_for('static', filename='images/ninja_karate.gif') }}" style="width: 140px; filter: drop-shadow(0 0 10px #f1e05a);">
+                </div>
+                
+                <h4 class="text-light mb-3">INITIALIZE?</h4>
+                <div class="d-grid gap-3 px-4">
+                    <a href="{{ url_for('login') }}" class="btn btn-warning btn-lg"><strong>LOGIN</strong></a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-warning">NEW RECRUIT</a>
                 </div>
             </div>
         </div>
 
-        <div class="mt-5">
-            <img src="{{ url_for('static', filename='images/ninja_karate.gif') }}" style="width: 120px;">
+        <div class="mt-5 pt-3 border-top border-secondary text-center">
+            <p class="text-muted x-small">SYSTEM STATUS: ONLINE // VERSION 1.0.4</p>
         </div>
     </div>
 </div>

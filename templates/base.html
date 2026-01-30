@@ -10,7 +10,7 @@
             background-color: #0d1117; 
             color: #c9d1d9; 
             font-family: 'Courier New', monospace; 
-            padding-top: 120px; /* This keeps content BELOW the navbar */
+            padding-top: 120px;
         }
         .navbar-arcade {
             background-color: #161b22;
@@ -26,19 +26,46 @@
         .key-input { 
             background-color: #0d1117 !important; 
             color: #f1e05a !important; 
-            border: 1px solid #30363d !important; 
+            border: 1px solid #30363d !important;
         }
-        .key-input::placeholder { color: #484f58 !important; }
+        .key-input::placeholder { color: #72767d !important; }
         
-        /* Fixed Flash Messages */
         .system-alerts {
             position: fixed;
-            top: 80px; /* Just below the navbar */
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: 1050;
+            z-index: 10000;
             width: 90%;
             max-width: 500px;
+        }
+
+        .alert-arcade {
+            background-color: #161b22 !important;
+            border: 2px solid #f1e05a !important;
+            color: #f1e05a !important;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.8), 0 0 10px rgba(241, 224, 90, 0.2);
+            border-radius: 8px;
+        }
+
+        .btn-close-white {
+            filter: invert(1) grayscale(100%) brightness(200%);
+        }
+
+        .form-label { 
+            color: #f1e05a !important;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .text-muted { 
+            color: #b9bbbe !important;
+        }
+
+        p {
+            color: #c9d1d9 !important;
         }
     </style>
 </head>
@@ -46,7 +73,21 @@
 
     <nav class="navbar navbar-expand-lg navbar-dark navbar-arcade fixed-top">
         <div class="container">
-            <a class="navbar-brand text-warning" href="/">DB_NINJA</a>
+            <a class="navbar-brand text-warning" href="/"><strong>DB NINJA</strong></a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <div class="collapse navbar-collapse" id="navbarText">
+                <ul class="navbar-nav ms-auto">
+                    {% if session.get('user_id') %}
+                        <li class="nav-item">
+                            <a class="nav-link text-danger border border-danger rounded px-2" href="{{ url_for('logout') }}">LOGOUT</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </nav>
 
