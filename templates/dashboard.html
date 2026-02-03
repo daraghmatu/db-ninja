@@ -4,9 +4,21 @@
     body { background-color: #0d1117; color: #c9d1d9; font-family: 'Courier New', Courier, monospace; }
     .arcade-card { background: #161b22; border: 2px solid #30363d; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
     .arcade-card h6 { color: #8b949e !important; font-weight: bold; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
-    .progress-segment { height: 20px; border: 1px solid #30363d; background: #0d1117; }
-    .progress-segment.complete { background: #238636; box-shadow: 0 0 10px #238636; }
-    .progress-segment.current { background: #f1e05a; box-shadow: 0 0 10px #f1e05a; } 
+    
+    .progress-segment {height: 25px; border: 1px solid #30363d; background: #0d1117; flex: 1;}
+    .is-current { animation: blink 4s infinite; border: 2px solid #fff !important; }
+    .lvl-0 { background: #ffffff !important; color: #000000 !important; }
+    .lvl-1 { background: #e0e0e0 !important; color: #000000 !important; }
+    .lvl-2 { background: #f1e05a !important; color: #000000 !important; }
+    .lvl-3 { background: #fd971f !important; color: #000000 !important; }
+    .lvl-4 { background: #a6e22e !important; color: #000000 !important; }
+    .lvl-5 { background: #66d9ef !important; color: #000000 !important; }
+    .lvl-6 { background: #ae81ff !important; color: #000000 !important; }
+    .lvl-7 { background: #ffd700 !important; color: #000000 !important; }
+    .lvl-8 { background: #8b4513 !important; color: #ffffff !important; }
+    .lvl-9 { background: #f61827 !important; color: #ffffff !important; }
+    .lvl-10 { background: #000000 !important; color: #f1e05a !important; border: 1px solid #f1e05a; }
+    
     .ninja-terminal { border-left: 4px solid #f1e05a; padding-left: 15px; }
     .question-box { border-bottom: 1px solid #30363d; padding: 15px 0; }
     .key-input { background: #0d1117; border: 2px solid #f1e05a; color: #f1e05a; font-size: 2rem; text-align: center; letter-spacing: 10px; text-transform: uppercase; }
@@ -19,14 +31,23 @@
 <div class="container-fluid mt-4">
     <div class="row mb-4">
         <div class="col-12">
-            <h5 class="text-center mb-3">NINJA JOURNEY: {{ session['level_name'] }}</h5>
-            <div class="d-flex w-100">
-                {% for l in levels %}
-                <div class="flex-fill progress-segment 
-                    {{ 'complete' if l.level_id <= user_level }} 
-                    {{ 'current' if l.level_id == (user_level + 1) }}">
-                </div>
+            <h5 class="text-center mb-3 text-uppercase">
+                NINJA JOURNEY: <span class="lvl-{{ user_level }} px-3 py-1 rounded shadow-sm">
+                    {{ session['level_name'] }}
+                </span>
+            </h5>
+    
+            <div class="d-flex w-100" style="gap: 5px;">
+                {% for i in range(1, 11) %}
+                    <div class="progress-segment 
+                        {% if user_level >= i %} lvl-{{ i }} {% endif %} 
+                        {{ 'is-current lvl-' ~ i if user_level + 1 == i }}">
+                    </div>
                 {% endfor %}
+            </div>
+            <div class="d-flex justify-content-between mt-1 small text-muted">
+                <span>White Belt</span>
+                <span>Black Belt</span>
             </div>
         </div>
     </div>
