@@ -3,6 +3,7 @@ from config import Config
 import database as db
 from werkzeug.security import check_password_hash
 import json
+import datetime
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -67,17 +68,18 @@ def dashboard():
     current_level = session['current_level']
     next_level = session['current_level'] + 1 
 
-    game_session = db.get_or_create_session(user_id, next_level)
-    questions = json.loads(game_session['questions_data'])
+    game_session = db.get_active_session(user_id)
 
-    levels = db.get_all_levels()
+    if not game_session:
+        game_session = db.create_session(user_id, next_level)
+
+    questions = json.loads(game_session['questions_data'])
 
     leaders = db.get_leaderboard()
 
     return render_template('dashboard.html', 
                            username=session['username'],
                            user_level=current_level,
-                           levels=levels,
                            leaderboard=leaders,
                            questions=questions,
                            lives=game_session['lives_remaining'],
@@ -85,23 +87,40 @@ def dashboard():
 
 @app.route('/submit', methods=['POST'])
 def submit():
-    user_key = request.form.get('submission_key').upper()
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
     user_id = session['user_id']
-    level_id = session['current_level']
+    user_input = request.form.get('submission_key', '').strip().upper()
 
-    # Get session answer in JSON
-    game_session = db.get_active_session(user_id, level_id)
-    questions = json.loads(game_session['questions_data'])
+    game_session = db.get_active_session(user_id)
+    if not game_session:
+        return redirect(url_for('dashboard'))
     
-    # Build key from snapshot
-    correct_key = "".join([q['correct_option'] for q in questions])
-
-    if user_key == correct_key:
-        # db.complete_level(game_session['session_id'], user_id, level_id)
-        flash("Level Cleared! Rank Up!")
+    if user_input == game_session['correct_key']:
+        # Calculate time taken
+        start_time = game_session['start_time']
+        end_time = datetime.datetime.now()
+        duration = (end_time - start_time).total_seconds()
+        
+        # Calculate Score: (Lives * 100) + (3600 / duration)
+        # Use max(1, duration) to ensure never division by zero
+        base_score = game_session['lives_remaining'] * 100
+        speed_bonus = int(3600 / max(1, duration))
+        session_score = base_score + speed_bonus
+        
+        db.process_level_win(user_id, game_session['session_id'], session_score)
+        
+        flash(f"STRIKE TRUE! You are now a {session.get('level_name')}!")
+		
     else:
-        # db.handle_failed_attempt(game_session['session_id'])
-        flash("Incorrect Sequence! The Ninja has fallen.")
+        is_game_over = db.process_level_fail(user_id, game_session['session_id'])
+        
+        if is_game_over:
+            flash("GAME OVER. Your journey ends here.")
+            return redirect(url_for('game_over'))
+        else:
+            flash("MISSED! One life lost.")
 
     return redirect(url_for('dashboard'))
 

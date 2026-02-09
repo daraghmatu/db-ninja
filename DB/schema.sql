@@ -28,10 +28,13 @@ create table users (
     user_id int primary key auto_increment,
     username varchar(50) unique not null,
     password_hash varchar(255) not null,
-    current_level int not null default 0,
-    total_score int not null default 0,
     registration_date timestamp default current_timestamp,
-    foreign key (current_level) references levels(level_id)
+    current_level int default 0,
+    highest_level int default 0,
+    total_score int default 0,
+    last_updated timestamp default current_timestamp,
+    foreign key (current_level) references levels(level_id),
+    foreign key (highest_level) references levels(level_id)
 );
 
 create table question (
@@ -43,50 +46,25 @@ create table question (
     option_c text not null, 
     option_d text not null,
     correct_option char(1) not null, -- 'a', 'b', 'c', 'd'
-    points int not null,
-    foreign key (level_id) references levels(level_id)
-);
-/*
--- long-term record of best performance on each level
-create table user_progress (
-    user_id int,
-    level_id int,
-    high_score int not null default 0,
-    is_completed boolean not null default false,
-    completion_date timestamp default current_timestamp on update current_timestamp,
-    primary key (user_id, level_id),
-    foreign key (user_id) references users(user_id),
     foreign key (level_id) references levels(level_id)
 );
 
--- for analytics and the 'total lives lost' metric
-create table game_attempt (
-    attempt_id int primary key auto_increment,
-    user_id int not null,
-    level_id int not null,
-    attempt_time timestamp default current_timestamp,
-    successful boolean not null,
-    lives_lost int not null default 0, -- 1 if failed, 0 if successful
-    foreign key (user_id) references users(user_id)
-);
-*/
--- temporary, for randomised answers
 create table user_session (
     session_id int primary key auto_increment,
     user_id int not null,
     level_id int not null,
     questions_data json not null, -- stores the randomized qs/options for integrity
-    final_submission_key varchar(6), -- the unique combined answer string
+    correct_key varchar(6), -- the unique combined answer string
     lives_remaining int default 3,
     session_score int not null default 0,
     is_active boolean default true,
-    started_at timestamp default current_timestamp,
+    start_time timestamp default current_timestamp,
     foreign key (user_id) references users(user_id),
     foreign key (level_id) references levels(level_id)
 );
 
 -- Triggers
-
+/*
 -- automatically clear progress records if an admin resets a user to level 1
 delimiter //
 
@@ -95,7 +73,7 @@ after update on users
 for each row
 begin
     -- only act if the level has been reduced to 1 from a higher level
-    if new.current_level = 1 and old.current_level > 1 then
+    if new.current_level = 0 and old.current_level > 0 then
         -- delete all associated progress records
         delete from user_progress where user_id = new.user_id;
         
@@ -105,7 +83,7 @@ begin
 end //
 
 delimiter ;
-
+*/
 -- Stored Procedures
 
 delimiter //
@@ -207,13 +185,13 @@ values
 (9, 'Red Belt', 6, 'NoSQL', 0),
 (10, 'Black Belt', 6, 'MongoDB aggregation', 0);
 
-insert into question (level_id, question_text, option_a, option_b, option_c, option_d, correct_option, points) 
+insert into question (level_id, question_text, option_a, option_b, option_c, option_d, correct_option) 
 values 
-(1, 'Which SQL keyword is used to retrieve data from a database?', 'GET', 'EXTRACT', 'SELECT', 'OPEN', 'C', 10),
-(1, 'What does the "*" mean in "SELECT * FROM users"?', 'All columns', 'All rows', 'Delete all', 'Filter data', 'A', 10),
-(1, 'Which clause is used to filter records?', 'ORDER BY', 'WHERE', 'GROUP BY', 'LIMIT', 'B', 10),
-(1, 'Which command is used to remove all data from a table without deleting the table structure?', 'REMOVE', 'DELETE', 'DROP', 'TRUNCATE', 'D', 10),
-(1, 'How do you select all columns from a table named "Students"?', 'SELECT Students', 'SELECT * FROM Students', 'EXTRACT Students', 'SHOW Students', 'B', 10),
-(1, 'Which SQL statement is used to update data in a database?', 'MODIFY', 'SAVE', 'UPDATE', 'CHANGE', 'C', 10),
-(1, 'In SQL, what is the default sort order of ORDER BY?', 'Descending', 'Random', 'Ascending', 'Alphabetic only', 'C', 10),
-(1, 'How do you return the number of records in the "Orders" table?', 'COUNT(*)', 'SUM(*)', 'TOTAL(*)', 'NUMBER(*)', 'A', 10);
+(1, 'Which SQL keyword is used to retrieve data from a database?', 'GET', 'EXTRACT', 'SELECT', 'OPEN', 'C'),
+(1, 'What does the "*" mean in "SELECT * FROM users"?', 'All columns', 'All rows', 'Delete all', 'Filter data', 'A'),
+(1, 'Which clause is used to filter records?', 'ORDER BY', 'WHERE', 'GROUP BY', 'LIMIT', 'B'),
+(1, 'Which command is used to remove all data from a table without deleting the table structure?', 'REMOVE', 'DELETE', 'DROP', 'TRUNCATE', 'D'),
+(1, 'How do you select all columns from a table named "Students"?', 'SELECT Students', 'SELECT * FROM Students', 'EXTRACT Students', 'SHOW Students', 'B'),
+(1, 'Which SQL statement is used to update data in a database?', 'MODIFY', 'SAVE', 'UPDATE', 'CHANGE', 'C'),
+(1, 'In SQL, what is the default sort order of ORDER BY?', 'Descending', 'Random', 'Ascending', 'Alphabetic only', 'C'),
+(1, 'How do you return the number of records in the "Orders" table?', 'COUNT(*)', 'SUM(*)', 'TOTAL(*)', 'NUMBER(*)', 'A');

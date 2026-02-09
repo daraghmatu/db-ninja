@@ -85,7 +85,8 @@ def get_user_by_username(username):
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
-                select  u.user_id, u.username, u.password_hash, u.current_level, l.level_name 
+                select  u.user_id, u.username, u.password_hash, u.current_level, 
+                        u.highest_level, l.level_name 
                 from    users u 
                 inner join levels l 
                 where   current_level = l.level_id 
@@ -93,23 +94,6 @@ def get_user_by_username(username):
                 """
         cursor.execute(query, (username,))
         return cursor.fetchone()
-    finally:
-        cursor.close()
-        conn.close()
-
-def get_all_levels():
-    """Fetches the release status for all 10 levels."""
-    conn = get_connection()
-    try:
-        cursor = conn.cursor(dictionary=True)
-        query = """
-                select  level_id, level_name, is_available 
-                from    levels
-                where   level_id > 0 
-                order by level_id
-                """
-        cursor.execute(query)
-        return cursor.fetchall()
     finally:
         cursor.close()
         conn.close()
@@ -130,8 +114,26 @@ def get_level_info(level_id):
         cursor.close()
         conn.close()
 
-def get_or_create_session(user_id, level_id):
-    level_info = get_level_info(level_id)
+def get_active_session(user_id):
+    conn = get_connection()
+    if not conn: return None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            SELECT  * 
+            FROM    user_session 
+            WHERE   user_id = %s 
+            AND     is_active = 1
+            ORDER BY start_time DESC LIMIT 1
+        """
+        cursor.execute(query, (user_id,))
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
+
+def create_session(user_id, next_level_id):
+    level_info = get_level_info(next_level_id)
     if not level_info or not level_info['is_available']:
         print(f"Access Denied: Level not open.")
         return None
@@ -139,20 +141,6 @@ def get_or_create_session(user_id, level_id):
     conn = get_connection()
     try:
         cursor = conn.cursor(dictionary=True)
-        
-        # Check if active session for this user and level
-        query = """
-                select  * 
-                from    user_session 
-                where   user_id = %s 
-                and     level_id = %s 
-                and     is_active = 1
-                """
-        cursor.execute(query, (user_id, level_id))
-        existing_session = cursor.fetchone()
-        
-        if existing_session:
-            return existing_session
 
         # Pick 6 random questions if no current session
         # get questions for level
@@ -162,18 +150,21 @@ def get_or_create_session(user_id, level_id):
             where   level_id = %s 
             order by rand() limit 6
             """
-        cursor.execute(q_query, (level_id,))
+        cursor.execute(q_query, (next_level_id,))
         questions = cursor.fetchall()
+
+        # Get the correct answer key
+        correct_key = "".join([q['correct_option'] for q in questions]).upper()
 
         # Serialize the full objects into JSON
         questions_json = json.dumps(questions)
 
         insert_sql = """
             insert into user_session 
-            (user_id, level_id, questions_data)
-            VALUES (%s, %s, %s)
+            (user_id, level_id, questions_data, correct_key)
+            VALUES (%s, %s, %s, %s)
         """
-        cursor.execute(insert_sql, (user_id, level_id, questions_json))
+        cursor.execute(insert_sql, (user_id, next_level_id, questions_json, correct_key))
         conn.commit()
 
         # Return the newly created session        
@@ -190,7 +181,10 @@ def get_leaderboard(limit=100):
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT username, total_score FROM users ORDER BY total_score DESC LIMIT %s
+            select 	username, total_score 
+            from 	users 
+            order by total_score desc, username 
+            limit 	%s
         """
         cursor.execute(query, (limit,))
         return cursor.fetchall()
@@ -198,6 +192,64 @@ def get_leaderboard(limit=100):
         cursor.close()
         conn.close()
 
+def process_level_win(user_id, session_id, score):
+    conn = get_connection()
+    if not conn: return []
+    try:
+        print(f"user: {user_id}")
+        print(f"session_id: {session_id}")
+        print(f"score: {score}")
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            update  users 
+            set     current_level = current_level + 1, 
+                    total_score = total_score + %s,
+                    highest_level = 
+                        CASE 
+                            WHEN current_level + 1 > highest_level THEN current_level + 1 
+                            ELSE highest_level 
+                        END
+            where   user_id = %s
+        """
+        cursor.execute(query, (score, user_id))
+        
+        query = """
+            update  user_session
+            set     is_active = 0, 
+                    session_score = %s
+            where   session_id = %s
+        """
+        cursor.execute(query, (score, session_id))
+
+    finally:
+        cursor.close()
+        conn.close()
+
+def process_level_fail(user_id, session_id):
+    conn = get_connection()
+    if not conn: return []
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            update  users 
+            set     current_level = current_level + 1, 
+                    total_score = total_score + %s
+            where   user_id = %s
+        """
+        cursor.execute(query, (user_id))
+        
+        query = """
+            update  user_session
+            set     is_active = 0, 
+                    session_score = %s
+            where   session_id = %s
+        """
+        cursor.execute(query, (session_id))
+        
+    finally:
+        cursor.close()
+        conn.close()
+    
 if __name__ == "__main__":
     # Test the connection when running this file directly
     db_health_check()
