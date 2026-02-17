@@ -256,34 +256,64 @@ def process_level_win(user_id, session_id, score):
         # Commit the transaction
         conn.commit() 
     
-    except:
+    except Error as e:
+        print(f"DATABASE ERROR: {e}")
         conn.rollback()
 
     finally:
         cursor.close()
         conn.close()
 
-def process_level_fail(user_id, session_id):
+def process_level_fail(session_id):
     conn = get_connection()
     if not conn: return []
+    conn.start_transaction()
     try:
-        cursor = conn.cursor(dictionary=True)
+        cursor = conn.cursor(dictionary=False)
+        # Check current no. lives       
         query = """
-            update  users 
-            set     current_level = current_level + 1, 
-                    total_score = total_score + %s
-            where   user_id = %s
+            select	lives_remaining
+            from	user_session
+            where	session_id = %s
+            for update;
         """
-        cursor.execute(query, (user_id))
-        
-        query = """
-            update  user_session
-            set     is_active = 0, 
-                    session_score = %s
-            where   session_id = %s
-        """
-        cursor.execute(query, (session_id))
-        
+        cursor.execute(query, (session_id,))
+        lives = cursor.fetchone()
+        if lives[0] == 1:
+            # Game Over
+            query = """
+                update  user_session
+                set     is_active = 0, 
+                        session_score = 0,
+                        lives_remaining = 0
+                where   session_id = %s
+            """
+            cursor.execute(query, (session_id,))
+
+            # Commit the transaction
+            conn.commit()
+
+            return True
+
+        else:
+            # Dock a life
+            query = """
+                update  user_session
+                set     lives_remaining = lives_remaining - 1
+                where   session_id = %s
+            """
+            cursor.execute(query, (session_id,))
+
+            # Commit the transaction
+            conn.commit()
+
+            return False 
+    
+    except Error as e:
+        print(f"DATABASE ERROR: {e}")
+        conn.rollback()
+        return False
+
     finally:
         cursor.close()
         conn.close()

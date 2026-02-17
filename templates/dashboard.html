@@ -137,14 +137,22 @@
         <div class="col-md-9">
             <div class="arcade-card ninja-terminal h-100">
                 
-                {% if is_locked %}
+                {% if page_state == "LOCKED" %}
                     <div class="text-center py-5">
                         <div class="mb-4" style="font-size: 5rem; opacity: 0.5;">🔒</div>
                         <h3 class="text-warning mb-3">{{ target_level_name }} is Locked</h3>
                         <p class="text-muted lead">
                             The Sensei has not released this challenge yet.<br>
-                            Please check back after the next lecture!
+                            Check back after the next lecture!
                         </p>
+                    </div>
+
+                {% elif page_state == "FAILED" %}
+                    <div class="text-center py-5">
+                        <img src="/static/images/ninja_out.gif" class="mb-4" style="max-height: 150px;">
+                        <h3 class="text-danger text-uppercase">Ninja Failure!</h3>
+                        <p class="text-muted">You ran out of lives on the {{ target_level_name }} challenge.</p>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-warning mt-3">TRY AGAIN</a>
                     </div>
         
                 {% else %}

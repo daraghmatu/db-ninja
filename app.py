@@ -72,15 +72,20 @@ def dashboard():
     level_name = level_map.get(current_level)
     target_level_name = level_map.get(target_level)
 
-    active_game = db.get_active_session(user_id)
-
-    is_locked = False
-    if not active_game:
-        active_game = db.create_session(user_id, target_level)
-
-        if active_game == "LOCKED":
-            is_locked = True
-            active_game = None
+    page_state = "ACTIVE"
+    # Check if they were just sent here from a failure
+    if request.args.get('status') == 'failed':
+        page_state = "FAILED"
+        active_game = None
+    else:
+        active_game = db.get_active_session(user_id)
+        
+        if not active_game:
+            active_game = db.create_session(user_id, target_level)
+            
+            if active_game == "LOCKED":
+                page_state = "LOCKED"
+                active_game = None
 
     lives = 0
     sid = 0
@@ -99,7 +104,7 @@ def dashboard():
                            target_level_name=target_level_name,
                            leaderboard=leaders,
                            questions=questions,
-                           is_locked=is_locked,
+                           page_state=page_state,
                            lives=lives,
                            session_id=sid)
 
@@ -132,11 +137,10 @@ def submit():
         flash(f"STRIKE TRUE! You are now a {session.get('level_name')}!")
 		
     else:
-        is_game_over = db.process_level_fail(user_id, game_session['session_id'])
+        is_game_over = db.process_level_fail(game_session['session_id'])
         
         if is_game_over:
-            flash("GAME OVER. Your journey ends here.")
-            return redirect(url_for('game_over'))
+            return redirect(url_for('dashboard', status='failed'))
         else:
             flash("MISSED! One life lost.")
 
