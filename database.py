@@ -3,7 +3,6 @@ from mysql.connector import pooling, Error
 from config import Config
 from werkzeug.security import generate_password_hash
 import json
-import random
 
 # Initialize Connection Pool
 # Allows multiple users to query the DB simultaneously more efficiently
@@ -14,7 +13,8 @@ try:
         host=Config.DB_HOST,
         user=Config.DB_USER,
         password=Config.DB_PASSWORD,
-        database=Config.DB_NAME
+        database=Config.DB_NAME,
+        autocommit=True
     )
     print(f"Connection pool created for: {Config.DB_NAME}")
 except Error as e:
@@ -85,15 +85,29 @@ def get_user_by_username(username):
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
-                select  u.user_id, u.username, u.password_hash, u.current_level, 
-                        u.highest_level, l.level_name 
+                select  u.user_id, u.username, u.password_hash
                 from    users u 
-                inner join levels l 
-                where   current_level = l.level_id 
-                and     username = %s
+                where   username = %s
                 """
         cursor.execute(query, (username,))
         return cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_level_map():
+    conn = get_connection()
+    if not conn: return None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+            select  level_id, level_name 
+            from    levels
+            order by level_id
+        """
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        return {row['level_id']: row['level_name'] for row in rows}
     finally:
         cursor.close()
         conn.close()
@@ -109,6 +123,22 @@ def get_level_info(level_id):
             where   level_id = %s
         """
         cursor.execute(query, (level_id,))
+        return cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
+
+def get_user_levels(user_id):
+    conn = get_connection()
+    if not conn: return None
+    try:
+        cursor = conn.cursor(dictionary=True)
+        query = """
+                select  u.current_level, u.highest_level
+                from    users u 
+                where   user_id = %s
+                """
+        cursor.execute(query, (user_id,))
         return cursor.fetchone()
     finally:
         cursor.close()
@@ -132,25 +162,26 @@ def get_active_session(user_id):
         cursor.close()
         conn.close()
 
-def create_session(user_id, next_level_id):
-    level_info = get_level_info(next_level_id)
-    if not level_info or not level_info['is_available']:
-        print(f"Access Denied: Level not open.")
+def create_session(user_id, target_level_id):
+    level_info = get_level_info(target_level_id)
+    if not level_info:
         return None
+    
+    if not level_info['is_available']:
+        return "LOCKED"
     
     conn = get_connection()
     try:
         cursor = conn.cursor(dictionary=True)
 
-        # Pick 6 random questions if no current session
-        # get questions for level
+        # Pick 6 random questions for level
         q_query = """
             select  *
             from    question 
             where   level_id = %s 
             order by rand() limit 6
             """
-        cursor.execute(q_query, (next_level_id,))
+        cursor.execute(q_query, (target_level_id,))
         questions = cursor.fetchall()
 
         # Get the correct answer key
@@ -164,7 +195,7 @@ def create_session(user_id, next_level_id):
             (user_id, level_id, questions_data, correct_key)
             VALUES (%s, %s, %s, %s)
         """
-        cursor.execute(insert_sql, (user_id, next_level_id, questions_json, correct_key))
+        cursor.execute(insert_sql, (user_id, target_level_id, questions_json, correct_key))
         conn.commit()
 
         # Return the newly created session        
@@ -195,24 +226,25 @@ def get_leaderboard(limit=100):
 def process_level_win(user_id, session_id, score):
     conn = get_connection()
     if not conn: return []
+    conn.start_transaction()
+
     try:
-        print(f"user: {user_id}")
-        print(f"session_id: {session_id}")
-        print(f"score: {score}")
         cursor = conn.cursor(dictionary=True)
+        # Update overall game stats in users table
         query = """
             update  users 
-            set     current_level = current_level + 1, 
-                    total_score = total_score + %s,
+            set     total_score = total_score + %s,
                     highest_level = 
                         CASE 
                             WHEN current_level + 1 > highest_level THEN current_level + 1 
                             ELSE highest_level 
-                        END
+                        END,
+                    current_level = current_level + 1
             where   user_id = %s
         """
         cursor.execute(query, (score, user_id))
         
+        # Update level stats in user_session table
         query = """
             update  user_session
             set     is_active = 0, 
@@ -220,6 +252,12 @@ def process_level_win(user_id, session_id, score):
             where   session_id = %s
         """
         cursor.execute(query, (score, session_id))
+
+        # Commit the transaction
+        conn.commit() 
+    
+    except:
+        conn.rollback()
 
     finally:
         cursor.close()

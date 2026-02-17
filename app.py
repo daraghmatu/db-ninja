@@ -51,8 +51,6 @@ def login():
         if user and check_password_hash(user['password_hash'], password):
             session['user_id'] = user['user_id']
             session['username'] = user['username']
-            session['current_level'] = user['current_level']
-            session['level_name'] = user['level_name']
             return redirect(url_for('dashboard'))
         
         flash("Invalid username or password.")
@@ -65,25 +63,45 @@ def dashboard():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    current_level = session['current_level']
-    next_level = session['current_level'] + 1 
+    level_map = db.get_level_map()
 
-    game_session = db.get_active_session(user_id)
+    user_levels = db.get_user_levels(user_id) 
+    current_level = user_levels['current_level']
+    target_level = user_levels['highest_level'] + 1
 
-    if not game_session:
-        game_session = db.create_session(user_id, next_level)
+    level_name = level_map.get(current_level)
+    target_level_name = level_map.get(target_level)
 
-    questions = json.loads(game_session['questions_data'])
+    active_game = db.get_active_session(user_id)
+
+    is_locked = False
+    if not active_game:
+        active_game = db.create_session(user_id, target_level)
+
+        if active_game == "LOCKED":
+            is_locked = True
+            active_game = None
+
+    lives = 0
+    sid = 0
+    questions = []
+    if active_game:
+        questions = json.loads(active_game['questions_data'])
+        lives = active_game['lives_remaining']
+        sid = active_game['session_id']
 
     leaders = db.get_leaderboard()
 
     return render_template('dashboard.html', 
                            username=session['username'],
                            user_level=current_level,
+                           current_level_name=level_name,
+                           target_level_name=target_level_name,
                            leaderboard=leaders,
                            questions=questions,
-                           lives=game_session['lives_remaining'],
-                           session_id=game_session['session_id'])
+                           is_locked=is_locked,
+                           lives=lives,
+                           session_id=sid)
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -103,10 +121,10 @@ def submit():
         end_time = datetime.datetime.now()
         duration = (end_time - start_time).total_seconds()
         
-        # Calculate Score: (Lives * 100) + (3600 / duration)
+        # Calculate Score: (Lives * 100) + (36000 / duration)
         # Use max(1, duration) to ensure never division by zero
         base_score = game_session['lives_remaining'] * 100
-        speed_bonus = int(3600 / max(1, duration))
+        speed_bonus = int(36000 / max(1, duration))
         session_score = base_score + speed_bonus
         
         db.process_level_win(user_id, game_session['session_id'], session_score)

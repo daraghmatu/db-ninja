@@ -175,7 +175,7 @@ insert into levels (level_id, level_name, unique_key_length, topic, is_available
 values
 (0, 'Newb', 0, 'Starting state', 1),
 (1, 'White Belt', 6, 'DB Design', 1),
-(2, 'Yellow Belt', 6, 'Querying', 0),
+(2, 'Yellow Belt', 6, 'Querying', 1),
 (3, 'Orange Belt', 6, 'Indexes', 0),
 (4, 'Green Belt', 6, 'Transactions', 0),
 (5, 'Blue Belt', 6, 'Isolation', 0),
@@ -194,4 +194,11 @@ values
 (1, 'How do you select all columns from a table named "Students"?', 'SELECT Students', 'SELECT * FROM Students', 'EXTRACT Students', 'SHOW Students', 'B'),
 (1, 'Which SQL statement is used to update data in a database?', 'MODIFY', 'SAVE', 'UPDATE', 'CHANGE', 'C'),
 (1, 'In SQL, what is the default sort order of ORDER BY?', 'Descending', 'Random', 'Ascending', 'Alphabetic only', 'C'),
-(1, 'How do you return the number of records in the "Orders" table?', 'COUNT(*)', 'SUM(*)', 'TOTAL(*)', 'NUMBER(*)', 'A');
+(1, 'How do you return the number of records in the "Orders" table?', 'COUNT(*)', 'SUM(*)', 'TOTAL(*)', 'NUMBER(*)', 'A'),
+(2, 'Level 2 Test 1', 'GET', 'EXTRACT', 'SELECT', 'OPEN', 'C'),
+(2, 'Level 2 Test 1', 'GET', 'EXTRACT', 'SELECT', 'OPEN', 'C'),
+(2, 'Level 2 Test 2', 'All columns', 'All rows', 'Delete all', 'Filter data', 'A'),
+(2, 'Level 2 Test 3', 'ORDER BY', 'WHERE', 'GROUP BY', 'LIMIT', 'B'),
+(2, 'Level 2 Test 4', 'REMOVE', 'DELETE', 'DROP', 'TRUNCATE', 'D'),
+(2, 'Level 2 Test 5', 'SELECT Students', 'SELECT * FROM Students', 'EXTRACT Students', 'SHOW Students', 'B'),
+(2, 'Level 2 Test 6', 'MODIFY', 'SAVE', 'UPDATE', 'CHANGE', 'C');
