@@ -104,7 +104,17 @@
     <div class="row">
         <div class="col-md-3">
             <div class="arcade-card text-center">
-                <img src="/static/images/ninja_karate.gif" alt="Ninja Status" class="img-fluid mb-3" style="max-height: 140px;">
+                {% if page_state == "FAILED" %}
+                    <img src="/static/images/ninja_out.gif" alt="Ninja Status" class="img-fluid mb-3" style="max-height: 140px;">
+                    
+                {% elif page_state == "MISSED" %}
+                    <img src="/static/images/ninja_still.gif" alt="Ninja Status" class="img-fluid mb-3" style="max-height: 140px;">
+
+                {% else %}
+                    <img src="/static/images/ninja_karate.gif" alt="Ninja Status" class="img-fluid mb-3" style="max-height: 140px;">
+                
+                {% endif %}
+
                 <h4 class="text-warning mb-2">{{ username }}</h4>
                 <div class="mb-3">
                     {% for i in range(lives) %}
@@ -149,7 +159,6 @@
 
                 {% elif page_state == "FAILED" %}
                     <div class="text-center py-5">
-                        <img src="/static/images/ninja_out.gif" class="mb-4" style="max-height: 150px;">
                         <h3 class="text-danger text-uppercase">Ninja Failure!</h3>
                         <p class="text-muted">You ran out of lives on the {{ target_level_name }} challenge.</p>
                         <a href="{{ url_for('dashboard') }}" class="btn btn-warning mt-3">TRY AGAIN</a>

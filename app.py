@@ -13,6 +13,9 @@ with app.app_context():
     if not db.db_health_check():
         print("Warning: Database health check failed at startup!")
 
+# Global variables
+level_map = db.get_level_map()
+
 # Routes
 @app.route('/')
 def index():
@@ -63,8 +66,7 @@ def dashboard():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    level_map = db.get_level_map()
-
+    
     user_levels = db.get_user_levels(user_id) 
     current_level = user_levels['current_level']
     target_level = user_levels['highest_level'] + 1
@@ -73,13 +75,18 @@ def dashboard():
     target_level_name = level_map.get(target_level)
 
     page_state = "ACTIVE"
-    # Check if they were just sent here from a failure
-    if request.args.get('status') == 'failed':
+    # Check sent arg
+    arg_state = request.args.get('status')
+    if arg_state == 'failed':
         page_state = "FAILED"
         active_game = None
+
     else:
         active_game = db.get_active_session(user_id)
         
+        if arg_state == 'missed':
+            page_state = "MISSED"
+
         if not active_game:
             active_game = db.create_session(user_id, target_level)
             
@@ -134,7 +141,8 @@ def submit():
         
         db.process_level_win(user_id, game_session['session_id'], session_score)
         
-        flash(f"STRIKE TRUE! You are now a {session.get('level_name')}!")
+        level_name = level_map.get(game_session['level_id'])
+        flash(f"STRIKE TRUE! You are now a {level_name}!")
 		
     else:
         is_game_over = db.process_level_fail(game_session['session_id'])
@@ -143,6 +151,7 @@ def submit():
             return redirect(url_for('dashboard', status='failed'))
         else:
             flash("MISSED! One life lost.")
+            return redirect(url_for('dashboard', status='missed'))
 
     return redirect(url_for('dashboard'))
 
