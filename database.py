@@ -235,11 +235,12 @@ def process_level_win(user_id, session_id, score):
             update  users 
             set     total_score = total_score + %s,
                     highest_level = 
-                        CASE 
-                            WHEN current_level + 1 > highest_level THEN current_level + 1 
-                            ELSE highest_level 
-                        END,
-                    current_level = current_level + 1
+                        LEAST(
+                            CASE 
+                                WHEN current_level + 1 > highest_level THEN current_level + 1 
+                                ELSE highest_level 
+                            END, 10),
+                    current_level = LEAST(current_level + 1, 10)
             where   user_id = %s
         """
         cursor.execute(query, (score, user_id))

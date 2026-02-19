@@ -72,9 +72,14 @@ def dashboard():
     target_level = user_levels['highest_level'] + 1
 
     level_name = level_map.get(current_level)
-    target_level_name = level_map.get(target_level)
+    target_level_name = level_map.get(target_level)     # will return None when target_level = 11
+    
+    if current_level == 10:
+        page_state = "COMPLETE"
+    
+    else:
+        page_state = "ACTIVE"
 
-    page_state = "ACTIVE"
     # Check sent arg
     arg_state = request.args.get('status')
     if arg_state == 'failed':

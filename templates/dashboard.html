@@ -160,8 +160,16 @@
                 {% elif page_state == "FAILED" %}
                     <div class="text-center py-5">
                         <h3 class="text-danger text-uppercase">Ninja Failure!</h3>
-                        <p class="text-muted">You ran out of lives on the {{ target_level_name }} challenge.</p>
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-warning mt-3">TRY AGAIN</a>
+                        <p class="text-muted">
+                            You ran out of lives on the {{ target_level_name }} challenge.</p>
+                        <a href="{{ url_for('dashboard') }}" 
+                            class="btn btn-warning mt-3">TRY AGAIN</a>
+                    </div>
+
+                {% elif page_state == "COMPLETE" %}
+                    <div class="text-center py-5">
+                        <img src="/static/images/mr_miyagi.gif" alt="Ninja Status" 
+                        class="img-fluid mb-3" style="max-height: 400px;">
                     </div>
         
                 {% else %}
