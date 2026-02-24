@@ -144,19 +144,20 @@ def get_user_levels(user_id):
         cursor.close()
         conn.close()
 
-def get_active_session(user_id):
+def get_active_session(user_id, current_level):
     conn = get_connection()
     if not conn: return None
     try:
         cursor = conn.cursor(dictionary=True)
         query = """
-            SELECT  * 
+            SELECT  *
             FROM    user_session 
             WHERE   user_id = %s 
+            AND     level_id = %s 
             AND     is_active = 1
-            ORDER BY start_time DESC LIMIT 1
+            LIMIT 1
         """
-        cursor.execute(query, (user_id,))
+        cursor.execute(query, (user_id, current_level))
         return cursor.fetchone()
     finally:
         cursor.close()
@@ -234,12 +235,7 @@ def process_level_win(user_id, session_id, score):
         query = """
             update  users 
             set     total_score = total_score + %s,
-                    highest_level = 
-                        LEAST(
-                            CASE 
-                                WHEN current_level + 1 > highest_level THEN current_level + 1 
-                                ELSE highest_level 
-                            END, 10),
+                    highest_level = LEAST(GREATEST(highest_level, current_level), 10),
                     current_level = LEAST(current_level + 1, 10)
             where   user_id = %s
         """
@@ -315,6 +311,26 @@ def process_level_fail(session_id):
         conn.rollback()
         return False
 
+    finally:
+        cursor.close()
+        conn.close()
+
+def update_current_level(user_id, level_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:        
+        query = """
+            UPDATE  users 
+            SET     current_level = %s 
+            WHERE   user_id = %s
+            """
+        cursor.execute(query, (level_id, user_id))
+
+    except Error as e:
+        print(f"Error switching level: {e}")
+        conn.rollback()
+        
     finally:
         cursor.close()
         conn.close()

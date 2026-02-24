@@ -69,10 +69,10 @@ def dashboard():
     
     user_levels = db.get_user_levels(user_id) 
     current_level = user_levels['current_level']
-    target_level = user_levels['highest_level'] + 1
+    highest_level = user_levels['highest_level']
 
-    level_name = level_map.get(current_level)
-    target_level_name = level_map.get(target_level)     # will return None when target_level = 11
+    current_level_name = level_map.get(current_level)
+    highest_level_name = level_map.get(highest_level)
     
     if current_level == 10:
         page_state = "COMPLETE"
@@ -87,13 +87,13 @@ def dashboard():
         active_game = None
 
     else:
-        active_game = db.get_active_session(user_id)
+        active_game = db.get_active_session(user_id, current_level)
         
         if arg_state == 'missed':
             page_state = "MISSED"
 
         if not active_game:
-            active_game = db.create_session(user_id, target_level)
+            active_game = db.create_session(user_id, current_level)
             
             if active_game == "LOCKED":
                 page_state = "LOCKED"
@@ -111,9 +111,10 @@ def dashboard():
 
     return render_template('dashboard.html', 
                            username=session['username'],
-                           user_level=current_level,
-                           current_level_name=level_name,
-                           target_level_name=target_level_name,
+                           current_level=current_level,
+                           highest_level=highest_level,
+                           highest_level_name=highest_level_name,
+                           current_level_name=current_level_name,
                            leaderboard=leaders,
                            questions=questions,
                            page_state=page_state,
@@ -127,8 +128,10 @@ def submit():
 
     user_id = session['user_id']
     user_input = request.form.get('submission_key', '').strip().upper()
+    user_levels = db.get_user_levels(user_id) 
+    current_level = user_levels['current_level']
 
-    game_session = db.get_active_session(user_id)
+    game_session = db.get_active_session(user_id, current_level)
     if not game_session:
         return redirect(url_for('dashboard'))
     
@@ -158,6 +161,23 @@ def submit():
             flash("MISSED! One life lost.")
             return redirect(url_for('dashboard', status='missed'))
 
+    return redirect(url_for('dashboard'))
+
+@app.route('/switch_level/<int:level_id>')
+def switch_level(level_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    
+    # Check player isn't trying to skip ahead via URL
+    user_levels = db.get_user_levels(user_id)
+    if level_id > (user_levels['highest_level'] + 1):
+        flash("You haven't reached that level yet, Ninja!")
+        return redirect(url_for('dashboard'))
+
+    db.update_current_level(user_id, level_id)
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/logout')
