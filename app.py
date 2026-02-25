@@ -70,9 +70,6 @@ def dashboard():
     user_levels = db.get_user_levels(user_id) 
     current_level = user_levels['current_level']
     highest_level = user_levels['highest_level']
-
-    current_level_name = level_map.get(current_level)
-    highest_level_name = level_map.get(highest_level)
     
     if current_level == 10:
         page_state = "COMPLETE"
@@ -113,8 +110,7 @@ def dashboard():
                            username=session['username'],
                            current_level=current_level,
                            highest_level=highest_level,
-                           highest_level_name=highest_level_name,
-                           current_level_name=current_level_name,
+                           level_map=level_map,
                            leaderboard=leaders,
                            questions=questions,
                            page_state=page_state,

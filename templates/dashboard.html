@@ -103,7 +103,7 @@
                                 {% if is_clickable %} lvl-{{ i }} {% endif %} 
                                 {{ 'is-current lvl-' ~ i if current_level == i }}"
                         style="text-decoration: none; cursor: pointer;"
-                        title="Play Level {{ i }}">
+                        title="Play {{ level_map.get(i) }} Challenge">
                     </a>
                 {% else %}
                     <div class="progress-segment flex-fill 
@@ -143,7 +143,7 @@
                 </div>
                 <div class="pt-2 border-top border-secondary">
                     <p class="small text-uppercase mb-0" style="color: #8b949e;">Current Rank</p>
-                    <p class="fw-bold mb-0">{{ highest_level_name }}</p>
+                    <p class="fw-bold mb-0">{{ level_map.get(highest_level) }}</p>
                 </div>
             </div>
 
@@ -169,7 +169,7 @@
                 {% if page_state == "LOCKED" %}
                     <div class="text-center py-5">
                         <div class="mb-4" style="font-size: 5rem; opacity: 0.5;">🔒</div>
-                        <h3 class="text-warning mb-3">{{ current_level_name }} is Locked</h3>
+                        <h3 class="text-warning mb-3">{{ level_map.get(current_level) }} is Locked</h3>
                         <p class="text-muted lead">
                             The Sensei has not released this challenge yet.<br>
                             Check back after the next lecture!
@@ -180,7 +180,7 @@
                     <div class="text-center py-5">
                         <h3 class="text-danger text-uppercase">Ninja Failure!</h3>
                         <p class="text-muted">
-                            You ran out of lives on the {{ current_level_name }} challenge.</p>
+                            You ran out of lives on the {{ level_map.get(current_level) }} challenge.</p>
                         <a href="{{ url_for('dashboard') }}" 
                             class="btn btn-warning mt-3">TRY AGAIN</a>
                     </div>
@@ -192,7 +192,7 @@
                     </div>
         
                 {% else %}
-                    <h3 class="text-warning mb-4 text-center">{{ current_level_name }} Challenge</h3>
+                    <h3 class="text-warning mb-4 text-center">{{ level_map.get(current_level) }} Challenge</h3>
                     
                     <div class="question-list" style="max-height: 55vh; overflow-y: auto; padding-right: 10px;">
                         {% for q in questions %}
