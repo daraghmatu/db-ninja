@@ -130,6 +130,7 @@ def submit():
     user_input = request.form.get('submission_key', '').strip().upper()
     user_levels = db.get_user_levels(user_id) 
     current_level = user_levels['current_level']
+    highest_level = user_levels['highest_level']
 
     game_session = db.get_active_session(user_id, current_level)
     if not game_session:
@@ -150,7 +151,10 @@ def submit():
         db.process_level_win(user_id, game_session['session_id'], session_score)
         
         level_name = level_map.get(game_session['level_id'])
-        flash(f"STRIKE TRUE! You are now a {level_name}!")
+        if current_level > highest_level:
+            flash(f"STRIKE TRUE! You are now a {level_name}!")
+        else:
+            flash(f"Practice makes perfect! You've mastered {level_name} again!")
 		
     else:
         is_game_over = db.process_level_fail(game_session['session_id'])

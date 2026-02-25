@@ -234,7 +234,12 @@ def process_level_win(user_id, session_id, score):
         # Update overall game stats in users table
         query = """
             update  users 
-            set     total_score = total_score + %s,
+            set     total_score = total_score + (
+                        CASE 
+                            WHEN current_level > highest_level THEN %s 
+                            ELSE 0 
+                        END
+                    ),
                     highest_level = LEAST(GREATEST(highest_level, current_level), 10),
                     current_level = LEAST(current_level + 1, 10)
             where   user_id = %s
