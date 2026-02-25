@@ -99,16 +99,15 @@
                         
                 {% if is_clickable %}
                     <a href="{{ url_for('switch_level', level_id=i) }}" 
-                        class="progress-segment flex-fill 
-                                {% if is_clickable %} lvl-{{ i }} {% endif %} 
+                        class="progress-segment flex-fill lvl-{{ i }}
                                 {{ 'is-current lvl-' ~ i if current_level == i }}"
                         style="text-decoration: none; cursor: pointer;"
                         title="Play {{ level_map.get(i) }} Challenge">
                     </a>
                 {% else %}
-                    <div class="progress-segment flex-fill 
-                                {% if is_clickable %} lvl-{{ i }} {% endif %} 
-                                {{ 'is-current lvl-' ~ i if current_level == i }}">
+                    <div 
+                        class="progress-segment flex-fill"
+                        style="cursor: not-allowed;">
                     </div>
                 {% endif %}
             {% endfor %}
