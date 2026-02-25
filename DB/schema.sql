@@ -174,16 +174,17 @@ values (754691, true, 'initial test enrollment key');
 insert into levels (level_id, level_name, unique_key_length, topic, is_available)
 values
 (0, 'Newb', 0, 'Starting state', 1),
-(1, 'White Belt', 6, 'DB Design', 1),
-(2, 'Yellow Belt', 6, 'Querying', 1),
-(3, 'Orange Belt', 6, 'Indexes', 1),
-(4, 'Green Belt', 6, 'Transactions', 1),
-(5, 'Blue Belt', 6, 'Isolation', 1),
+(1, 'White Belt', 6, 'DB Design', 0),
+(2, 'Yellow Belt', 6, 'Querying', 0),
+(3, 'Orange Belt', 6, 'Indexes', 0),
+(4, 'Green Belt', 6, 'Transactions', 0),
+(5, 'Blue Belt', 6, 'Isolation', 0),
 (6, 'Purple Belt', 6, 'Locking', 0),
 (7, 'Gold Belt', 6, 'Stored Procedures', 0),
 (8, 'Brown Belt', 6, 'Replication', 0),
 (9, 'Red Belt', 6, 'NoSQL', 0),
-(10, 'Black Belt', 6, 'MongoDB aggregation', 0);
+(10, 'Black Belt', 6, 'MongoDB aggregation', 0),
+(11, 'Black Belt', 0, 'Game Completed', 1);
 
 insert into question (level_id, question_text, option_a, option_b, option_c, option_d, correct_option) 
 values 

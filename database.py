@@ -241,7 +241,7 @@ def process_level_win(user_id, session_id, score):
                         END
                     ),
                     highest_level = LEAST(GREATEST(highest_level, current_level), 10),
-                    current_level = LEAST(current_level + 1, 10)
+                    current_level = LEAST(highest_level + 1, 11)
             where   user_id = %s
         """
         cursor.execute(query, (score, user_id))

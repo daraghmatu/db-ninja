@@ -71,19 +71,18 @@ def dashboard():
     current_level = user_levels['current_level']
     highest_level = user_levels['highest_level']
     
-    if current_level == 10:
-        page_state = "COMPLETE"
-    
-    else:
-        page_state = "ACTIVE"
-
-    # Check sent arg
     arg_state = request.args.get('status')
-    if arg_state == 'failed':
+
+    if current_level == 11:
+        page_state = "COMPLETE"
+        active_game = None
+        
+    elif arg_state == "failed":
         page_state = "FAILED"
         active_game = None
 
     else:
+        page_state = "ACTIVE"
         active_game = db.get_active_session(user_id, current_level)
         
         if arg_state == 'missed':
